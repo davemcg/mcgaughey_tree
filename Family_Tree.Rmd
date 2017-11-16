@@ -1,0 +1,37 @@
+---
+title: "McGaughey Family Tree"
+output: html_notebook
+---
+
+Starting with Donald C McGaughey and Joan May as the start point and going down (and up their parent line). Everyone keeps their original last names.
+
+```{r, fig.width=4.5, fig.heigth=10}
+library(kinship2)
+library(tidyverse)
+# read in ped file
+ped <-read.delim('mcgaughey.ped', header = F, sep = ',')
+# format names to split on spaces after 8 characters
+ped$names <- sapply(ped$V2, function(x) paste(strwrap(x,9), collapse='\n'))
+ped$dad <- sapply(ped$V3, function(x) paste(strwrap(x,9), collapse='\n'))
+ped$mom <- sapply(ped$V4, function(x) paste(strwrap(x,9), collapse='\n'))
+# Steph and Carli are twins
+relate <- data.frame(rbind(
+  cbind('Carli\nRindt','Stephanie\nRindt',2,'McGaughey'),
+  cbind('Brett\nRindt','Jennifer\nAnn\nGerow',4,'McGaughey'),
+  cbind('Stephanie\nRindt','Matthew\nTern',4,'McGaughey'),
+  cbind('Sue\nMcGaughey','Tom\nRenner',4,'McGaughey'),
+  cbind('Amy\nMcGaughey','Rick\nKlawitter',4,'McGaughey')))
+relate$X3 <- as.numeric(as.character(relate$X3))
+colnames(relate) <- c('id1','id2','code','famid')
+
+# build pedigree
+pedAll <- pedigree(id = ped$names,
+                   dadid = ped$dad, 
+                   momid = ped$mom,
+                   sex = ped$V5, 
+                   famid = ped$V1,
+                   relation = relate)
+# print
+plot(pedAll['McGaughey'],mar=c(5,5,5,5), cex=0.5)
+```
+
